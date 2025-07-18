@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lector QR con jsQR</title>
+    <style>
+        #video { width: 320px; height: 240px; border: 1px solid #ccc; }
+        #output { margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Lector de Códigos QR</h1>
+    <video id="video" autoplay></video>
+    <canvas id="canvas" hidden></canvas>
+    <div id="output"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const output = document.getElementById('output');
+        const ctx = canvas.getContext('2d');
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.setAttribute("playsinline", true);
+                video.play();
+                requestAnimationFrame(tick);
+            });
+
+        function tick() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, imageData.width, imageData.height);
+                if (code) {
+                    output.textContent = "QR Detectado: " + code.data;
+                } else {
+                    output.textContent = "Escaneando...";
+                }
+            }
+            requestAnimationFrame(tick);
+        }
+    </script>
+</body>
+</html>
