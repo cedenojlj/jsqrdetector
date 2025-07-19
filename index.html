@@ -1,122 +1,32 @@
 html
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lector QR con Botones</title>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/dist/html5-qrcode.min.js"></script>
-    <style>
-        #qr-reader {
-            width: 300px;
-            margin: 20px auto;
-            display: none; /* Oculto inicialmente */
-        }
-        #qr-result {
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            min-height: 20px;
-        }
-        button {
-            padding: 10px 15px;
-            margin: 5px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>Lector QR para Formulario</h1>
-    
-    <!-- Botones de control -->
-    <button id="btn-start">Iniciar Escáner</button>
-    <button id="btn-stop" disabled>Detener Escáner</button>
-    
-    <!-- Contenedor del escáner -->
-    <div id="qr-reader"></div>
-    <div id="qr-result">Escanea un código QR para llenar el formulario.</div>
-    
-    <!-- Formulario -->
-    <form id="myForm">
-        <label for="nombre">Nombre:</label>
-        <input type="text" id="nombre" name="nombre"><br><br>
-        
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email"><br><br>
-        
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono" name="telefono"><br><br>
-    </form>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="reader" width="600px"></div>
 
     <script>
-        // Elementos del DOM
-        const btnStart = document.getElementById("btn-start");
-        const btnStop = document.getElementById("btn-stop");
-        const qrReader = document.getElementById("qr-reader");
-        const qrResult = document.getElementById("qr-result");
-        
-        // Instancia del escáner
-        const html5QrCode = new Html5Qrcode("qr-reader");
-        
-        // Función para manejar el escaneo
-        function onScanSuccess(decodedText) {
-            qrResult.innerHTML = `<strong>Datos escaneados:</strong> ${decodedText}`;
-            
-            // Intentar parsear JSON (ejemplo: {"nombre":"Ana","email":"ana@test.com"})
-            try {
-                const data = JSON.parse(decodedText);
-                document.getElementById("nombre").value = data.nombre || "";
-                document.getElementById("email").value = data.email || "";
-                document.getElementById("telefono").value = data.telefono || "";
-            } catch (e) {
-                // Si es texto plano, llenar el primer campo
-                document.getElementById("nombre").value = decodedText;
-            }
-            
-            // Detener el escáner automáticamente (opcional)
-            // stopScanner();
-        }
-        
-        // Función para iniciar el escáner
-        async function startScanner() {
-            try {
-                const cameras = await Html5Qrcode.getCameras();
-                if (cameras && cameras.length > 0) {
-                    qrReader.style.display = "block";
-                    await html5QrCode.start(
-                        cameras[0].id, // Usa la primera cámara disponible
-                        {
-                            fps: 10,
-                            qrbox: 250
-                        },
-                        onScanSuccess
-                    );
-                    btnStart.disabled = true;
-                    btnStop.disabled = false;
-                } else {
-                    qrResult.innerText = "No se encontraron cámaras.";
-                }
-            } catch (err) {
-                qrResult.innerText = `Error: ${err.message}`;
-            }
-        }
-        
-        // Función para detener el escáner
-        async function stopScanner() {
-            try {
-                await html5QrCode.stop();
-                qrReader.style.display = "none";
-                btnStart.disabled = false;
-                btnStop.disabled = true;
-                qrResult.innerText = "Escáner detenido. Presiona 'Iniciar' para escanear otro código.";
-            } catch (err) {
-                qrResult.innerText = `Error al detener: ${err.message}`;
-            }
-        }
-        
-        // Event listeners
-        btnStart.addEventListener("click", startScanner);
-        btnStop.addEventListener("click", stopScanner);
+      function onScanSuccess(decodedText, decodedResult) {
+        // handle the scanned code as you like, for example:
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+      }
+
+      function onScanFailure(error) {
+        // handle scan failure, usually better to ignore and keep scanning.
+        // for example:
+        console.warn(`Code scan error = ${error}`);
+      }
+
+      let html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        /* verbose= */ false
+      );
+      html5QrcodeScanner.render(onScanSuccess, onScanFailure);
     </script>
-</body>
+  </body>
 </html>
